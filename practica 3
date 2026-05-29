@@ -1,0 +1,106 @@
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class Estudiante
+{
+    public string Nombre { get; set; }
+    public string Apellido { get; set; }
+    public double Nota1 { get; set; }
+    public double Nota2 { get; set; }
+    public double Nota3 { get; set; }
+    public double Nota4 { get; set; }
+    public double Promedio { get; set; }
+    public string Literal { get; set; }
+}
+
+class Program
+{
+    static void Main()
+    {
+        List<Estudiante> estudiantes = new List<Estudiante>();
+
+        Console.Write("¿Cuántos estudiantes desea registrar?: ");
+        int cantidad = int.Parse(Console.ReadLine());
+
+        int totalA = 0;
+        int totalB = 0;
+        int totalC = 0;
+        int totalReprobados = 0;
+
+        for (int i = 0; i < cantidad; i++)
+        {
+            Estudiante est = new Estudiante();
+
+            Console.WriteLine("\nEstudiante #" + (i + 1));
+
+            Console.Write("Nombre: ");
+            est.Nombre = Console.ReadLine();
+
+            Console.Write("Apellido: ");
+            est.Apellido = Console.ReadLine();
+
+            Console.Write("Nota 1: ");
+            est.Nota1 = double.Parse(Console.ReadLine());
+
+            Console.Write("Nota 2: ");
+            est.Nota2 = double.Parse(Console.ReadLine());
+
+            Console.Write("Nota 3: ");
+            est.Nota3 = double.Parse(Console.ReadLine());
+
+            Console.Write("Nota 4: ");
+            est.Nota4 = double.Parse(Console.ReadLine());
+
+            est.Promedio = (est.Nota1 + est.Nota2 + est.Nota3 + est.Nota4) / 4;
+
+            // Asignar literal
+            if (est.Promedio >= 90 && est.Promedio <= 100)
+            {
+                est.Literal = "A";
+                totalA++;
+            }
+            else if (est.Promedio >= 80 && est.Promedio < 90)
+            {
+                est.Literal = "B";
+                totalB++;
+            }
+            else if (est.Promedio >= 70 && est.Promedio < 80)
+            {
+                est.Literal = "C";
+                totalC++;
+            }
+            else
+            {
+                est.Literal = "F";
+                totalReprobados++;
+            }
+
+            estudiantes.Add(est);
+        }
+
+        // Ordenar por apellido
+        var listaOrdenada = estudiantes.OrderBy(e => e.Apellido).ToList();
+
+        Console.WriteLine("\nColegio Dios es Bueno");
+        Console.WriteLine("Calificaciones del Cuatrimestre");
+        Console.WriteLine("======================================================================");
+        Console.WriteLine("Nombre\tApellido\tPromedio\tLiteral");
+        Console.WriteLine("======================================================================");
+
+        foreach (var est in listaOrdenada)
+        {
+            Console.WriteLine($"{est.Nombre}\t{est.Apellido}\t\t{est.Promedio:F2}\t\t{est.Literal}");
+        }
+
+        Console.WriteLine("\n================ TOTALES ================");
+        Console.WriteLine("Estudiantes en A: " + totalA);
+        Console.WriteLine("Estudiantes en B: " + totalB);
+        Console.WriteLine("Estudiantes en C: " + totalC);
+        Console.WriteLine("Estudiantes Reprobados: " + totalReprobados);
+
+        Console.ReadKey();
+    }
+}
+```
