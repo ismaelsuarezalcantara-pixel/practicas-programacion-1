@@ -1,0 +1,437 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+class Habitacion
+{
+    public int Numero { get; set; }
+    public string Tipo { get; set; }
+    public decimal Precio { get; set; }
+    public bool Disponible { get; set; }
+
+    public Habitacion(int numero, string tipo, decimal precio, bool disponible)
+    {
+        Numero = numero;
+        Tipo = tipo;
+        Precio = precio;
+        Disponible = disponible;
+    }
+
+    public void MostrarInformacion()
+    {
+        Console.WriteLine("--------------------------------");
+        Console.WriteLine($"Número: {Numero}");
+        Console.WriteLine($"Tipo: {Tipo}");
+        Console.WriteLine($"Precio: RD${Precio}");
+        Console.WriteLine($"Disponible: {(Disponible ? "Sí" : "No")}");
+    }
+}
+
+class Cliente
+{
+    public string Nombre { get; set; }
+    public string Cedula { get; set; }
+    public string Telefono { get; set; }
+
+    public Cliente(string nombre, string cedula, string telefono)
+    {
+        Nombre = nombre;
+        Cedula = cedula;
+        Telefono = telefono;
+    }
+}
+
+class Reserva
+{
+    public Cliente Cliente { get; set; }
+    public Habitacion Habitacion { get; set; }
+    public DateTime FechaEntrada { get; set; }
+    public DateTime FechaSalida { get; set; }
+
+    public Reserva(Cliente cliente, Habitacion habitacion,
+                   DateTime entrada, DateTime salida)
+    {
+        Cliente = cliente;
+        Habitacion = habitacion;
+        FechaEntrada = entrada;
+        FechaSalida = salida;
+    }
+
+    public decimal CalcularTotal()
+    {
+        int dias = (FechaSalida - FechaEntrada).Days;
+        return dias * Habitacion.Precio;
+    }
+
+    public void MostrarReserva()
+    {
+        Console.WriteLine("--------------------------------");
+        Console.WriteLine($"Cliente: {Cliente.Nombre}");
+        Console.WriteLine($"Cédula: {Cliente.Cedula}");
+        Console.WriteLine($"Habitación: {Habitacion.Numero}");
+        Console.WriteLine($"Entrada: {FechaEntrada:dd/MM/yyyy}");
+        Console.WriteLine($"Salida: {FechaSalida:dd/MM/yyyy}");
+        Console.WriteLine($"Total: RD${CalcularTotal()}");
+    }
+}
+
+class Hotel
+{
+    public List<Habitacion> Habitaciones = new List<Habitacion>();
+    public List<Reserva> Reservas = new List<Reserva>();
+
+    public void AgregarHabitacion()
+    {
+        try
+        {
+            Console.Write("Número: ");
+            int numero = int.Parse(Console.ReadLine());
+
+            if (Habitaciones.Any(h => h.Numero == numero))
+            {
+                Console.WriteLine("No se permiten habitaciones repetidas.");
+                return;
+            }
+
+            Console.Write("Tipo: ");
+            string tipo = Console.ReadLine();
+
+            Console.Write("Precio: ");
+            decimal precio = decimal.Parse(Console.ReadLine());
+
+            Habitaciones.Add(
+                new Habitacion(numero, tipo, precio, true));
+
+            Console.WriteLine("Habitación registrada correctamente.");
+        }
+        catch (FormatException)
+        {
+            Console.WriteLine("Error: dato inválido.");
+        }
+        finally
+        {
+            Console.WriteLine("Proceso finalizado.");
+        }
+    }
+
+    public void MostrarHabitacionesDisponibles()
+    {
+        var disponibles = Habitaciones.Where(h => h.Disponible);
+
+        if (!disponibles.Any())
+        {
+            Console.WriteLine("No hay habitaciones disponibles.");
+            return;
+        }
+
+        foreach (var h in disponibles)
+            h.MostrarInformacion();
+    }
+
+    public void CrearReserva()
+    {
+        try
+        {
+            Console.Write("Nombre: ");
+            string nombre = Console.ReadLine();
+
+            Console.Write("Cédula: ");
+            string cedula = Console.ReadLine();
+
+            Console.Write("Teléfono: ");
+            string telefono = Console.ReadLine();
+
+            Console.Write("Número habitación: ");
+            int numero = int.Parse(Console.ReadLine());
+
+            Habitacion hab =
+                Habitaciones.FirstOrDefault(h => h.Numero == numero);
+
+            if (hab == null)
+            {
+                Console.WriteLine("La habitación no existe.");
+                return;
+            }
+
+            if (!hab.Disponible)
+            {
+                Console.WriteLine("La habitación está ocupada.");
+                return;
+            }
+
+            Console.Write("Fecha entrada (dd/MM/yyyy): ");
+            DateTime entrada = DateTime.Parse(Console.ReadLine());
+
+            Console.Write("Fecha salida (dd/MM/yyyy): ");
+            DateTime salida = DateTime.Parse(Console.ReadLine());
+
+            if (salida <= entrada)
+            {
+                Console.WriteLine("La fecha de salida debe ser mayor.");
+                return;
+            }
+
+            Cliente cliente =
+                new Cliente(nombre, cedula, telefono);
+
+            Reserva reserva =
+                new Reserva(cliente, hab, entrada, salida);
+
+            Reservas.Add(reserva);
+
+            hab.Disponible = false;
+
+            Console.WriteLine("Reserva creada exitosamente.");
+        }
+        catch (FormatException)
+        {
+            Console.WriteLine("Error en el formato de los datos.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error: " + ex.Message);
+        }
+        finally
+        {
+            Console.WriteLine("Proceso finalizado.");
+        }
+    }
+
+    public void CancelarReserva()
+    {
+        try
+        {
+            Console.Write("Número de habitación: ");
+            int numero = int.Parse(Console.ReadLine());
+
+            Reserva reserva =
+                Reservas.FirstOrDefault(r =>
+                r.Habitacion.Numero == numero);
+
+            if (reserva == null)
+            {
+                Console.WriteLine("Reserva no encontrada.");
+                return;
+            }
+
+            reserva.Habitacion.Disponible = true;
+            Reservas.Remove(reserva);
+
+            Console.WriteLine("Reserva cancelada.");
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Error al cancelar reserva.");
+        }
+    }
+
+    public void MostrarReservas()
+    {
+        if (Reservas.Count == 0)
+        {
+            Console.WriteLine("No hay reservas.");
+            return;
+        }
+
+        foreach (var r in Reservas)
+            r.MostrarReserva();
+    }
+
+    public void GuardarHabitacionesTXT()
+    {
+        try
+        {
+            using (StreamWriter sw =
+                new StreamWriter("habitaciones.txt"))
+            {
+                foreach (var h in Habitaciones)
+                {
+                    sw.WriteLine(
+                        $"{h.Numero},{h.Tipo},{h.Precio},{h.Disponible}");
+                }
+            }
+
+            Console.WriteLine("Habitaciones guardadas.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    public void GuardarReservasTXT()
+    {
+        try
+        {
+            using (StreamWriter sw =
+                new StreamWriter("reservas.txt"))
+            {
+                foreach (var r in Reservas)
+                {
+                    sw.WriteLine(
+                        $"{r.Cliente.Nombre}," +
+                        $"{r.Cliente.Cedula}," +
+                        $"{r.Cliente.Telefono}," +
+                        $"{r.Habitacion.Numero}," +
+                        $"{r.FechaEntrada:yyyy-MM-dd}," +
+                        $"{r.FechaSalida:yyyy-MM-dd}");
+                }
+            }
+
+            Console.WriteLine("Reservas guardadas.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    public void CargarHabitacionesTXT()
+    {
+        try
+        {
+            if (!File.Exists("habitaciones.txt"))
+                return;
+
+            Habitaciones.Clear();
+
+            string[] lineas =
+                File.ReadAllLines("habitaciones.txt");
+
+            foreach (string linea in lineas)
+            {
+                string[] datos = linea.Split(',');
+
+                Habitaciones.Add(
+                    new Habitacion(
+                        int.Parse(datos[0]),
+                        datos[1],
+                        decimal.Parse(datos[2]),
+                        bool.Parse(datos[3])
+                    ));
+            }
+        }
+        catch (FileNotFoundException)
+        {
+            Console.WriteLine("Archivo no encontrado.");
+        }
+        catch (FormatException)
+        {
+            Console.WriteLine("Error de formato.");
+        }
+    }
+
+    public void CargarReservasTXT()
+    {
+        try
+        {
+            if (!File.Exists("reservas.txt"))
+                return;
+
+            Reservas.Clear();
+
+            string[] lineas =
+                File.ReadAllLines("reservas.txt");
+
+            foreach (string linea in lineas)
+            {
+                string[] datos = linea.Split(',');
+
+                Habitacion hab =
+                    Habitaciones.FirstOrDefault(
+                        h => h.Numero == int.Parse(datos[3]));
+
+                if (hab != null)
+                {
+                    Cliente cliente =
+                        new Cliente(datos[0], datos[1], datos[2]);
+
+                    Reservas.Add(
+                        new Reserva(
+                            cliente,
+                            hab,
+                            DateTime.Parse(datos[4]),
+                            DateTime.Parse(datos[5])
+                        ));
+                }
+            }
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Error cargando reservas.");
+        }
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Hotel hotel = new Hotel();
+
+        hotel.CargarHabitacionesTXT();
+        hotel.CargarReservasTXT();
+
+        int opcion;
+
+        do
+        {
+            Console.WriteLine("\n===== SISTEMA HOTEL =====");
+            Console.WriteLine("1. Registrar habitación");
+            Console.WriteLine("2. Mostrar habitaciones disponibles");
+            Console.WriteLine("3. Crear reserva");
+            Console.WriteLine("4. Cancelar reserva");
+            Console.WriteLine("5. Guardar datos");
+            Console.WriteLine("6. Cargar datos");
+            Console.WriteLine("7. Mostrar reservas");
+            Console.WriteLine("8. Salir");
+
+            Console.Write("Seleccione una opción: ");
+            int.TryParse(Console.ReadLine(), out opcion);
+
+            switch (opcion)
+            {
+                case 1:
+                    hotel.AgregarHabitacion();
+                    break;
+
+                case 2:
+                    hotel.MostrarHabitacionesDisponibles();
+                    break;
+
+                case 3:
+                    hotel.CrearReserva();
+                    break;
+
+                case 4:
+                    hotel.CancelarReserva();
+                    break;
+
+                case 5:
+                    hotel.GuardarHabitacionesTXT();
+                    hotel.GuardarReservasTXT();
+                    break;
+
+                case 6:
+                    hotel.CargarHabitacionesTXT();
+                    hotel.CargarReservasTXT();
+                    Console.WriteLine("Datos cargados.");
+                    break;
+
+                case 7:
+                    hotel.MostrarReservas();
+                    break;
+
+                case 8:
+                    Console.WriteLine("Gracias por usar el sistema.");
+                    break;
+
+                default:
+                    Console.WriteLine("Opción inválida.");
+                    break;
+            }
+
+        } while (opcion != 8);
+    }
+}
