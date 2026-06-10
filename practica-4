@@ -1,0 +1,240 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace BibliotecaApp
+{
+    // Clase Libro
+    public class Libro
+    {
+        public string Titulo { get; set; }
+        public string Autor { get; set; }
+        public string ISBN { get; set; }
+        public bool Disponible { get; private set; }
+
+        public Libro(string titulo, string autor, string isbn)
+        {
+            Titulo = titulo;
+            Autor = autor;
+            ISBN = isbn;
+            Disponible = true;
+        }
+
+        public void MostrarInformacion()
+        {
+            Console.WriteLine($"Título: {Titulo}");
+            Console.WriteLine($"Autor: {Autor}");
+            Console.WriteLine($"ISBN: {ISBN}");
+            Console.WriteLine($"Disponible: {(Disponible ? "Sí" : "No")}");
+        }
+
+        public void PrestarLibro()
+        {
+            Disponible = false;
+        }
+
+        public void DevolverLibro()
+        {
+            Disponible = true;
+        }
+    }
+
+    // Clase Usuario
+    public class Usuario
+    {
+        public string Nombre { get; set; }
+        public string Cedula { get; set; }
+        public List<Libro> LibrosPrestados { get; set; }
+
+        public Usuario(string nombre, string cedula)
+        {
+            Nombre = nombre;
+            Cedula = cedula;
+            LibrosPrestados = new List<Libro>();
+        }
+
+        public void TomarPrestado(Libro libro)
+        {
+            if (libro.Disponible)
+            {
+                libro.PrestarLibro();
+                LibrosPrestados.Add(libro);
+                Console.WriteLine("Libro prestado correctamente.");
+            }
+            else
+            {
+                Console.WriteLine("El libro no está disponible.");
+            }
+        }
+
+        public void DevolverLibro(Libro libro)
+        {
+            if (LibrosPrestados.Contains(libro))
+            {
+                libro.DevolverLibro();
+                LibrosPrestados.Remove(libro);
+                Console.WriteLine("Libro devuelto correctamente.");
+            }
+        }
+
+        public void MostrarLibrosPrestados()
+        {
+            Console.WriteLine($"\nLibros prestados por {Nombre}:");
+
+            if (LibrosPrestados.Count == 0)
+            {
+                Console.WriteLine("No tiene libros prestados.");
+                return;
+            }
+
+            foreach (var libro in LibrosPrestados)
+            {
+                Console.WriteLine($"- {libro.Titulo}");
+            }
+        }
+    }
+
+    // Clase Biblioteca
+    public class Biblioteca
+    {
+        public List<Libro> Libros { get; set; }
+        public List<Usuario> Usuarios { get; set; }
+
+        public Biblioteca()
+        {
+            Libros = new List<Libro>();
+            Usuarios = new List<Usuario>();
+        }
+
+        public void AgregarLibro(Libro libro)
+        {
+            Libros.Add(libro);
+        }
+
+        public void RegistrarUsuario(Usuario usuario)
+        {
+            Usuarios.Add(usuario);
+        }
+
+        public void MostrarLibrosDisponibles()
+        {
+            Console.WriteLine("\n=== LIBROS DISPONIBLES ===");
+
+            foreach (var libro in Libros)
+            {
+                if (libro.Disponible)
+                {
+                    Console.WriteLine($"{libro.Titulo} - {libro.Autor}");
+                }
+            }
+        }
+
+        public Libro BuscarLibro(string isbn)
+        {
+            return Libros.FirstOrDefault(l => l.ISBN == isbn);
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Biblioteca biblioteca = new Biblioteca();
+
+            int opcion;
+
+            do
+            {
+                Console.WriteLine("\n===== SISTEMA BIBLIOTECA =====");
+                Console.WriteLine("1. Registrar libro");
+                Console.WriteLine("2. Registrar usuario");
+                Console.WriteLine("3. Prestar libro");
+                Console.WriteLine("4. Devolver libro");
+                Console.WriteLine("5. Mostrar libros disponibles");
+                Console.WriteLine("6. Mostrar usuarios");
+                Console.WriteLine("7. Salir");
+
+                Console.Write("Seleccione una opción: ");
+                opcion = Convert.ToInt32(Console.ReadLine());
+
+                switch (opcion)
+                {
+                    case 1:
+                        Console.Write("Título: ");
+                        string titulo = Console.ReadLine();
+
+                        Console.Write("Autor: ");
+                        string autor = Console.ReadLine();
+
+                        Console.Write("ISBN: ");
+                        string isbn = Console.ReadLine();
+
+                        biblioteca.AgregarLibro(new Libro(titulo, autor, isbn));
+                        Console.WriteLine("Libro registrado.");
+                        break;
+
+                    case 2:
+                        Console.Write("Nombre: ");
+                        string nombre = Console.ReadLine();
+
+                        Console.Write("Cédula: ");
+                        string cedula = Console.ReadLine();
+
+                        biblioteca.RegistrarUsuario(new Usuario(nombre, cedula));
+                        Console.WriteLine("Usuario registrado.");
+                        break;
+
+                    case 3:
+                        Console.Write("ISBN del libro: ");
+                        string isbnPrestamo = Console.ReadLine();
+
+                        Libro libro = biblioteca.BuscarLibro(isbnPrestamo);
+
+                        if (libro != null && biblioteca.Usuarios.Count > 0)
+                        {
+                            biblioteca.Usuarios[0].TomarPrestado(libro);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Libro no encontrado.");
+                        }
+                        break;
+
+                    case 4:
+                        Console.Write("ISBN del libro a devolver: ");
+                        string isbnDevolucion = Console.ReadLine();
+
+                        Libro libroDev = biblioteca.BuscarLibro(isbnDevolucion);
+
+                        if (libroDev != null && biblioteca.Usuarios.Count > 0)
+                        {
+                            biblioteca.Usuarios[0].DevolverLibro(libroDev);
+                        }
+                        break;
+
+                    case 5:
+                        biblioteca.MostrarLibrosDisponibles();
+                        break;
+
+                    case 6:
+                        foreach (var usuario in biblioteca.Usuarios)
+                        {
+                            Console.WriteLine($"\nNombre: {usuario.Nombre}");
+                            Console.WriteLine($"Cédula: {usuario.Cedula}");
+                            usuario.MostrarLibrosPrestados();
+                        }
+                        break;
+
+                    case 7:
+                        Console.WriteLine("Saliendo...");
+                        break;
+
+                    default:
+                        Console.WriteLine("Opción inválida.");
+                        break;
+                }
+
+            } while (opcion != 7);
+        }
+    }
+}
