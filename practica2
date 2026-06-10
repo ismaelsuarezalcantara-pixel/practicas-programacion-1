@@ -1,0 +1,45 @@
+using System;
+
+class Program
+{
+    static void Main()
+    {
+        string nombre, apellido, literal;
+        double nota1, nota2, nota3, nota4, promedio;
+
+        Console.Write("Ingrese el nombre: ");
+        nombre = Console.ReadLine();
+
+        Console.Write("Ingrese el apellido: ");
+        apellido = Console.ReadLine();
+
+        Console.Write("Ingrese la Nota 1: ");
+        nota1 = Convert.ToDouble(Console.ReadLine());
+
+        Console.Write("Ingrese la Nota 2: ");
+        nota2 = Convert.ToDouble(Console.ReadLine());
+
+        Console.Write("Ingrese la Nota 3: ");
+        nota3 = Convert.ToDouble(Console.ReadLine());
+
+        Console.Write("Ingrese la Nota 4: ");
+        nota4 = Convert.ToDouble(Console.ReadLine());
+
+        promedio = (nota1 + nota2 + nota3 + nota4) / 4;
+
+        if (promedio > 90 && promedio <= 100)
+            literal = "A";
+        else if (promedio > 80 && promedio <= 90)
+            literal = "B";
+        else if (promedio > 70 && promedio <= 80)
+            literal = "C";
+        else
+            literal = "D";
+
+        Console.WriteLine("\nColegio Dios es Bueno");
+        Console.WriteLine("Calificaciones del Cuatrimestre");
+        Console.WriteLine("-----------------------------------------------------");
+        Console.WriteLine("Nombre\tApellido\tNota1\tNota2\tNota3\tNota4\tPromedio\tLiteral");
+        Console.WriteLine($"{nombre}\t{apellido}\t\t{nota1}\t{nota2}\t{nota3}\t{nota4}\t{promedio:F2}\t\t{literal}");
+    }
+}
